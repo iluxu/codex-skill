@@ -1,0 +1,16 @@
+{
+  "name": "codex-skill",
+  "version": "0.1.0",
+  "description": "CLI for installing and managing Codex skills from a registry.",
+  "type": "module",
+  "bin": {
+    "codex-skill": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  }
+}
