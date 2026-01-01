@@ -8,9 +8,18 @@
   },
   "scripts": {
     "build": "tsup",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "commander": "^11.1.0"
-  }
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist"
+  ]
+}
 }
