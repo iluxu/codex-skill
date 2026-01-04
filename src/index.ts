@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Command } from "commander";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -6,6 +7,9 @@ import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+
+const DEFAULT_REGISTRY_URL =
+  "https://raw.githubusercontent.com/iluxu/codex-skills-registry/main/index.json";
 
 type IndexSkill = {
   name: string;
@@ -193,7 +197,7 @@ function resolveRegistrySource(): string {
     }
   }
 
-  throw new Error("Registry not found. Pass --registry or set REGISTRY_URL.");
+  return DEFAULT_REGISTRY_URL;
 }
 
 function findSkill(index: RegistryIndex, name: string): IndexSkill {
@@ -282,21 +286,49 @@ async function createTempFile(filename: string): Promise<string> {
 }
 
 async function unzipArchive(zipPath: string, destination: string): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const child = spawn("unzip", ["-o", zipPath, "-d", destination], { stdio: "inherit" });
+  try {
+    await runCommand("unzip", ["-o", zipPath, "-d", destination]);
+    return;
+  } catch (error) {
+    if (process.platform === "win32" && isMissingCommand(error)) {
+      const script = [
+        "Expand-Archive",
+        "-LiteralPath",
+        `'${escapePowerShell(zipPath)}'`,
+        "-DestinationPath",
+        `'${escapePowerShell(destination)}'`,
+        "-Force"
+      ].join(" ");
+      await runCommand("powershell", ["-NoProfile", "-Command", script]);
+      return;
+    }
+    if (isMissingCommand(error)) {
+      throw new Error("unzip not found. Install unzip or extract the .skill manually.");
+    }
+    throw error;
+  }
+}
+
+function runCommand(command: string, args: string[]): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "inherit" });
     child.on("error", (error) => {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        reject(new Error("unzip not found. Install unzip or extract the .skill manually."));
-      } else {
-        reject(error);
-      }
+      reject(error);
     });
     child.on("exit", (code) => {
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`unzip failed with code ${code}`));
+        reject(new Error(`${command} failed with code ${code ?? "unknown"}`));
       }
     });
   });
+}
+
+function isMissingCommand(error: unknown): boolean {
+  return (error as NodeJS.ErrnoException)?.code === "ENOENT";
+}
+
+function escapePowerShell(value: string): string {
+  return value.replace(/'/g, "''");
 }
