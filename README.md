@@ -2,22 +2,32 @@
 
 CLI to list, search, and install Codex skills from a registry.
 
+## Install the CLI
+
+```
+npm install -g codex-skill
+```
+
 ## Quick start (npx)
 
 ```
-npx --yes git+ssh://git@github.com/iluxu/codex-skill.git list \
-  --registry https://raw.githubusercontent.com/iluxu/codex-skills-registry/main/index.json
+npx --yes codex-skill list
 ```
 
 ## Install a skill locally
 
 ```
-npx --yes git+ssh://git@github.com/iluxu/codex-skill.git install codex-theme \
-  --registry https://raw.githubusercontent.com/iluxu/codex-skills-registry/main/index.json \
-  --to ~/.codex/skills
+npx --yes codex-skill install codex-theme
 ```
 
-Restart Codex after installing.
+Installs to `~/.codex/skills` (or `$CODEX_HOME/skills`) by default. Restart Codex after installing.
+
+## Registry override
+
+```
+REGISTRY_URL=https://raw.githubusercontent.com/iluxu/codex-skills-registry/main/index.json \
+  npx --yes codex-skill list
+```
 
 ## Local dev
 
