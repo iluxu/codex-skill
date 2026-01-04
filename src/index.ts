@@ -290,15 +290,28 @@ async function unzipArchive(zipPath: string, destination: string): Promise<void>
     return;
   } catch (error) {
     if (process.platform === "win32" && isMissingCommand(error)) {
-      const script = [
-        "Expand-Archive",
-        "-LiteralPath",
-        `'${escapePowerShell(zipPath)}'`,
-        "-DestinationPath",
-        `'${escapePowerShell(destination)}'`,
-        "-Force"
-      ].join(" ");
-      await runCommand("powershell", ["-NoProfile", "-Command", script]);
+      const originalPath = zipPath;
+      let archivePath = zipPath;
+      if (path.extname(zipPath).toLowerCase() !== ".zip") {
+        archivePath = await createTempFile(`${path.basename(zipPath, path.extname(zipPath))}.zip`);
+        await fs.copyFile(zipPath, archivePath);
+      }
+
+      try {
+        const script = [
+          "Expand-Archive",
+          "-LiteralPath",
+          `'${escapePowerShell(archivePath)}'`,
+          "-DestinationPath",
+          `'${escapePowerShell(destination)}'`,
+          "-Force"
+        ].join(" ");
+        await runCommand("powershell", ["-NoProfile", "-Command", script]);
+      } finally {
+        if (archivePath !== originalPath) {
+          await fs.unlink(archivePath).catch(() => undefined);
+        }
+      }
       return;
     }
     if (isMissingCommand(error)) {
