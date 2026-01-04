@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { Command } from "commander";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";

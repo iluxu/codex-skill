@@ -1,6 +1,6 @@
 {
   "name": "codex-skill",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI for installing and managing Codex skills from a registry.",
   "type": "module",
   "bin": {
